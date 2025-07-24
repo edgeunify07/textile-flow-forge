@@ -177,7 +177,7 @@ export function Navigation() {
           {/* Footer */}
           <div className="border-t p-4">
             <div className="text-center text-xs text-muted-foreground">
-              <p>TextileFlow ERP v2.0</p>
+              <p>UnifyEdge LLP v2.0</p>
               <p className="mt-1">Comprehensive Textile Management</p>
             </div>
           </div>

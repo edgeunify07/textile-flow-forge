@@ -120,7 +120,7 @@ const Index = () => {
               <Package className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">TextileFlow ERP</h1>
+              <h1 className="text-xl font-bold text-foreground">UnifyEdge LLP</h1>
               <p className="text-xs text-muted-foreground">Complete Textile Management Suite</p>
             </div>
           </div>
@@ -230,7 +230,7 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
-              Why Choose TextileFlow ERP?
+              Why Choose UnifyEdge LLP?
             </h2>
             
             <div className="grid gap-8 md:grid-cols-2">
@@ -277,7 +277,7 @@ const Index = () => {
                 Ready to Transform Your Textile Business?
               </h2>
               <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-                Join hundreds of textile companies using TextileFlow ERP to streamline 
+                Join hundreds of textile companies using UnifyEdge LLP to streamline 
                 their operations and boost productivity.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -306,13 +306,13 @@ const Index = () => {
             <div className="h-8 w-8 rounded-lg bg-gradient-textile flex items-center justify-center">
               <Package className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-foreground">TextileFlow ERP</span>
+            <span className="text-lg font-bold text-foreground">UnifyEdge LLP</span>
           </div>
           <p className="text-muted-foreground mb-4">
             Complete Textile Management Solution for Modern Manufacturing
           </p>
           <p className="text-sm text-muted-foreground">
-            © 2024 TextileFlow ERP. All rights reserved.
+            © 2024 UnifyEdge LLP. All rights reserved.
           </p>
         </div>
       </footer>
