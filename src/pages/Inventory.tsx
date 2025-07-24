@@ -6,6 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import { InventoryItem } from '@/types/textile';
 
 // Mock inventory data
@@ -64,6 +68,20 @@ export default function Inventory() {
   const [inventory, setInventory] = useState<InventoryItem[]>(mockInventory);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isAddStockOpen, setIsAddStockOpen] = useState(false);
+  const [newStock, setNewStock] = useState({
+    itemName: '',
+    category: 'fabric',
+    currentStock: 0,
+    unit: 'meters',
+    reorderLevel: 0,
+    maxStock: 0,
+    location: '',
+    supplier: '',
+    costPerUnit: 0,
+    batchNumber: ''
+  });
+  const { toast } = useToast();
 
   const filteredInventory = inventory.filter(item =>
     (selectedCategory === 'all' || item.category === selectedCategory) &&
@@ -92,6 +110,61 @@ export default function Inventory() {
     }
   };
 
+  const handleAddStock = () => {
+    if (!newStock.itemName || !newStock.location || !newStock.supplier) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newItem: InventoryItem = {
+      id: Date.now().toString(),
+      itemId: `${newStock.category.toUpperCase()}${String(inventory.length + 1).padStart(3, '0')}`,
+      itemName: newStock.itemName,
+      category: newStock.category as any,
+      currentStock: newStock.currentStock,
+      unit: newStock.unit,
+      reorderLevel: newStock.reorderLevel,
+      maxStock: newStock.maxStock,
+      location: newStock.location,
+      supplier: newStock.supplier,
+      costPerUnit: newStock.costPerUnit,
+      totalValue: newStock.currentStock * newStock.costPerUnit,
+      batchNumber: newStock.batchNumber,
+      lastUpdated: new Date()
+    };
+
+    setInventory([...inventory, newItem]);
+    setNewStock({
+      itemName: '', category: 'fabric', currentStock: 0, unit: 'meters',
+      reorderLevel: 0, maxStock: 0, location: '', supplier: '', costPerUnit: 0, batchNumber: ''
+    });
+    setIsAddStockOpen(false);
+
+    toast({
+      title: "Stock Added",
+      description: `${newStock.itemName} has been added to inventory.`
+    });
+  };
+
+  const handleAIInsights = () => {
+    toast({
+      title: "AI Analysis Started",
+      description: "Analyzing inventory patterns and generating insights...",
+    });
+    
+    // Simulate AI processing
+    setTimeout(() => {
+      toast({
+        title: "AI Insights Ready",
+        description: "New optimization recommendations are available in the insights panel.",
+      });
+    }, 2000);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -103,14 +176,18 @@ export default function Inventory() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleAIInsights}>
             <Brain className="h-4 w-4" />
             AI Insights
           </Button>
-          <Button variant="gradient" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Stock
-          </Button>
+          <Dialog open={isAddStockOpen} onOpenChange={setIsAddStockOpen}>
+            <DialogTrigger asChild>
+              <Button variant="gradient" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Stock
+              </Button>
+            </DialogTrigger>
+          </Dialog>
         </div>
       </div>
 
@@ -337,6 +414,152 @@ export default function Inventory() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Add Stock Dialog */}
+      <Dialog open={isAddStockOpen} onOpenChange={setIsAddStockOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Stock Item</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="item-name">Item Name *</Label>
+              <Input
+                id="item-name"
+                value={newStock.itemName}
+                onChange={(e) => setNewStock({ ...newStock, itemName: e.target.value })}
+                placeholder="Enter item name"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="category">Category *</Label>
+              <Select value={newStock.category} onValueChange={(value) => setNewStock({ ...newStock, category: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fabric">Fabric</SelectItem>
+                  <SelectItem value="thread">Thread</SelectItem>
+                  <SelectItem value="trim">Trim</SelectItem>
+                  <SelectItem value="accessory">Accessory</SelectItem>
+                  <SelectItem value="finished-goods">Finished Goods</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="current-stock">Current Stock *</Label>
+                <Input
+                  id="current-stock"
+                  type="number"
+                  value={newStock.currentStock}
+                  onChange={(e) => setNewStock({ ...newStock, currentStock: Number(e.target.value) })}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="unit">Unit *</Label>
+                <Select value={newStock.unit} onValueChange={(value) => setNewStock({ ...newStock, unit: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="meters">Meters</SelectItem>
+                    <SelectItem value="pieces">Pieces</SelectItem>
+                    <SelectItem value="kg">Kilograms</SelectItem>
+                    <SelectItem value="cones">Cones</SelectItem>
+                    <SelectItem value="rolls">Rolls</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="reorder-level">Reorder Level</Label>
+                <Input
+                  id="reorder-level"
+                  type="number"
+                  value={newStock.reorderLevel}
+                  onChange={(e) => setNewStock({ ...newStock, reorderLevel: Number(e.target.value) })}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="max-stock">Max Stock</Label>
+                <Input
+                  id="max-stock"
+                  type="number"
+                  value={newStock.maxStock}
+                  onChange={(e) => setNewStock({ ...newStock, maxStock: Number(e.target.value) })}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Location *</Label>
+              <Input
+                id="location"
+                value={newStock.location}
+                onChange={(e) => setNewStock({ ...newStock, location: e.target.value })}
+                placeholder="e.g., Warehouse A-1"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="supplier">Supplier *</Label>
+              <Input
+                id="supplier"
+                value={newStock.supplier}
+                onChange={(e) => setNewStock({ ...newStock, supplier: e.target.value })}
+                placeholder="Enter supplier name"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cost-per-unit">Cost Per Unit</Label>
+                <Input
+                  id="cost-per-unit"
+                  type="number"
+                  step="0.01"
+                  value={newStock.costPerUnit}
+                  onChange={(e) => setNewStock({ ...newStock, costPerUnit: Number(e.target.value) })}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="batch-number">Batch Number</Label>
+                <Input
+                  id="batch-number"
+                  value={newStock.batchNumber}
+                  onChange={(e) => setNewStock({ ...newStock, batchNumber: e.target.value })}
+                  placeholder="Optional"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setIsAddStockOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={handleAddStock}
+              >
+                Add Stock
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

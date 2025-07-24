@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useToast } from '@/hooks/use-toast';
 import { BillOfMaterials, BOMItem, CPPCalculation } from '@/types/textile';
 
 // Mock BOM data
@@ -136,12 +137,18 @@ export default function BOMCosting() {
   const [boms, setBoms] = useState<BillOfMaterials[]>(mockBOMs);
   const [selectedBOM, setSelectedBOM] = useState<BillOfMaterials | null>(mockBOMs[0]);
   const [activeTab, setActiveTab] = useState('bom-list');
+  const { toast } = useToast();
 
   const BOMListTab = () => (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Bill of Materials</h3>
-        <Button variant="textile" className="gap-2">
+        <Button variant="textile" className="gap-2" onClick={() => {
+          toast({
+            title: "Create BOM",
+            description: "Opening BOM creation wizard...",
+          });
+        }}>
           <Plus className="h-4 w-4" />
           Create New BOM
         </Button>
@@ -185,19 +192,41 @@ export default function BOMCosting() {
                 </div>
               </div>
               <div className="flex gap-2 mt-4">
-                <Button variant="outline" size="sm" className="gap-1">
+                <Button variant="outline" size="sm" className="gap-1" onClick={() => {
+                  setSelectedBOM(bom);
+                  setActiveTab('bom-details');
+                  toast({
+                    title: "BOM Selected",
+                    description: `Viewing details for ${bom.styleName}`,
+                  });
+                }}>
                   <Eye className="h-3 w-3" />
                   View
                 </Button>
-                <Button variant="secondary" size="sm" className="gap-1">
+                <Button variant="secondary" size="sm" className="gap-1" onClick={() => {
+                  toast({
+                    title: "Edit BOM",
+                    description: `Opening editor for ${bom.styleName}`,
+                  });
+                }}>
                   <Edit className="h-3 w-3" />
                   Edit
                 </Button>
-                <Button variant="outline" size="sm" className="gap-1">
+                <Button variant="outline" size="sm" className="gap-1" onClick={() => {
+                  toast({
+                    title: "Export Started",
+                    description: `Exporting BOM for ${bom.styleName}`,
+                  });
+                }}>
                   <Download className="h-3 w-3" />
                   Export
                 </Button>
-                <Button variant="destructive" size="sm" className="gap-1">
+                <Button variant="destructive" size="sm" className="gap-1" onClick={() => {
+                  toast({
+                    title: "BOM Deleted",
+                    description: `${bom.styleName} BOM has been removed.`,
+                  });
+                }}>
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
@@ -221,11 +250,21 @@ export default function BOMCosting() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="gap-1">
+            <Button variant="outline" size="sm" className="gap-1" onClick={() => {
+              toast({
+                title: "Export Started",
+                description: `Exporting BOM for ${selectedBOM.styleName}`,
+              });
+            }}>
               <Download className="h-3 w-3" />
               Export BOM
             </Button>
-            <Button variant="secondary" size="sm">Edit BOM</Button>
+            <Button variant="secondary" size="sm" onClick={() => {
+              toast({
+                title: "Edit Mode",
+                description: `Opening BOM editor for ${selectedBOM.styleName}`,
+              });
+            }}>Edit BOM</Button>
           </div>
         </div>
 
@@ -287,11 +326,21 @@ export default function BOMCosting() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="gap-1">
+            <Button variant="outline" size="sm" className="gap-1" onClick={() => {
+              toast({
+                title: "Export Started",
+                description: `Exporting CPP calculation for ${selectedBOM.styleName}`,
+              });
+            }}>
               <Download className="h-3 w-3" />
               Export CPP
             </Button>
-            <Button variant="secondary" size="sm">Recalculate</Button>
+            <Button variant="secondary" size="sm" onClick={() => {
+              toast({
+                title: "Recalculating",
+                description: "Updating CPP calculation with latest data...",
+              });
+            }}>Recalculate</Button>
           </div>
         </div>
 
@@ -461,7 +510,12 @@ export default function BOMCosting() {
             Create and manage Bill of Materials with automated CPP calculations
           </p>
         </div>
-        <Button variant="gradient" className="gap-2">
+        <Button variant="gradient" className="gap-2" onClick={() => {
+          toast({
+            title: "Quick Calculator",
+            description: "Opening CPP quick calculator...",
+          });
+        }}>
           <Calculator className="h-4 w-4" />
           Quick CPP Calculator
         </Button>

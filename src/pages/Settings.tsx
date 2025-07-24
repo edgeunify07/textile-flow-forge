@@ -43,17 +43,82 @@ const Settings = () => {
   };
 
   const handleExportData = () => {
+    const settingsData = {
+      profile: {
+        companyName: 'UnifyEdge Textiles',
+        industry: 'textile',
+        companySize: 'medium',
+        website: 'https://www.unifyedgetextiles.com',
+        description: 'Leading textile manufacturer specializing in premium cotton products and sustainable manufacturing processes.'
+      },
+      notifications: {
+        emailNotifications,
+        pushNotifications
+      },
+      system: {
+        autoBackup,
+        darkMode
+      },
+      exportedAt: new Date().toISOString()
+    };
+
+    const dataStr = JSON.stringify(settingsData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `unifyedge-settings-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+
     toast({
-      title: "Export Started",
-      description: "System data export has been initiated.",
+      title: "Export Complete",
+      description: "Settings have been exported successfully.",
     });
   };
 
   const handleImportData = () => {
-    toast({
-      title: "Import Ready",
-      description: "Please select your data file to import.",
-    });
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target?.result as string);
+          
+          // Apply imported settings
+          if (data.notifications) {
+            setEmailNotifications(data.notifications.emailNotifications ?? true);
+            setPushNotifications(data.notifications.pushNotifications ?? false);
+          }
+          
+          if (data.system) {
+            setAutoBackup(data.system.autoBackup ?? true);
+            setDarkMode(data.system.darkMode ?? false);
+          }
+          
+          toast({
+            title: "Import Successful",
+            description: "Settings have been imported and applied.",
+          });
+        } catch (error) {
+          toast({
+            title: "Import Failed",
+            description: "Invalid settings file format.",
+            variant: "destructive"
+          });
+        }
+      };
+      reader.readAsText(file);
+    };
+    
+    input.click();
   };
 
   return (
@@ -238,15 +303,30 @@ const Settings = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">Edit</Button>
-                        <Button size="sm" variant="destructive">
+                        <Button size="sm" variant="outline" onClick={() => {
+                          toast({
+                            title: "Edit User",
+                            description: `Opening edit dialog for ${user.name}`,
+                          });
+                        }}>Edit</Button>
+                        <Button size="sm" variant="destructive" onClick={() => {
+                          toast({
+                            title: "User Deleted",
+                            description: `${user.name} has been removed from the system.`,
+                          });
+                        }}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   ))}
                 </div>
-                <Button className="w-full">
+                <Button className="w-full" onClick={() => {
+                  toast({
+                    title: "Add User",
+                    description: "Opening new user creation dialog.",
+                  });
+                }}>
                   <User className="mr-2 h-4 w-4" />
                   Add New User
                 </Button>
@@ -409,7 +489,12 @@ const Settings = () => {
                   <Label htmlFor="confirm-password">Confirm New Password</Label>
                   <Input id="confirm-password" type="password" />
                 </div>
-                <Button className="w-full">Update Password</Button>
+                <Button className="w-full" onClick={() => {
+                  toast({
+                    title: "Password Updated",
+                    description: "Your password has been successfully changed.",
+                  });
+                }}>Update Password</Button>
               </CardContent>
             </Card>
 

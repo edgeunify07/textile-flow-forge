@@ -1,9 +1,13 @@
 import { useState } from 'react';
-import { Plus, Building2, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Building2, Edit, Trash2, Eye, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 import { Organization } from '@/types/textile';
 
 // Mock data - will be replaced with actual data management
@@ -33,11 +37,113 @@ const mockOrganizations: Organization[] = [
 export default function Organizations() {
   const [organizations, setOrganizations] = useState<Organization[]>(mockOrganizations);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
+  const [viewingOrg, setViewingOrg] = useState<Organization | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    address: '',
+    phone: '',
+    email: '',
+    gstNumber: ''
+  });
+  const { toast } = useToast();
 
   const filteredOrganizations = organizations.filter(org =>
     org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     org.address.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleAddOrganization = () => {
+    if (!formData.name || !formData.address || !formData.phone || !formData.email) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newOrg: Organization = {
+      id: Date.now().toString(),
+      name: formData.name,
+      address: formData.address,
+      phone: formData.phone,
+      email: formData.email,
+      gstNumber: formData.gstNumber,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    setOrganizations([...organizations, newOrg]);
+    setFormData({ name: '', address: '', phone: '', email: '', gstNumber: '' });
+    setIsAddDialogOpen(false);
+    
+    toast({
+      title: "Organization Added",
+      description: `${formData.name} has been successfully added.`
+    });
+  };
+
+  const handleEditOrganization = () => {
+    if (!editingOrg || !formData.name || !formData.address || !formData.phone || !formData.email) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const updatedOrgs = organizations.map(org =>
+      org.id === editingOrg.id
+        ? {
+            ...org,
+            name: formData.name,
+            address: formData.address,
+            phone: formData.phone,
+            email: formData.email,
+            gstNumber: formData.gstNumber,
+            updatedAt: new Date()
+          }
+        : org
+    );
+
+    setOrganizations(updatedOrgs);
+    setEditingOrg(null);
+    setFormData({ name: '', address: '', phone: '', email: '', gstNumber: '' });
+    
+    toast({
+      title: "Organization Updated",
+      description: `${formData.name} has been successfully updated.`
+    });
+  };
+
+  const handleDeleteOrganization = (orgId: string) => {
+    const orgToDelete = organizations.find(org => org.id === orgId);
+    setOrganizations(organizations.filter(org => org.id !== orgId));
+    
+    toast({
+      title: "Organization Deleted",
+      description: `${orgToDelete?.name} has been successfully deleted.`
+    });
+  };
+
+  const openEditDialog = (org: Organization) => {
+    setEditingOrg(org);
+    setFormData({
+      name: org.name,
+      address: org.address,
+      phone: org.phone,
+      email: org.email,
+      gstNumber: org.gstNumber || ''
+    });
+  };
+
+  const openAddDialog = () => {
+    setFormData({ name: '', address: '', phone: '', email: '', gstNumber: '' });
+    setIsAddDialogOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -49,10 +155,14 @@ export default function Organizations() {
             Manage your textile manufacturing companies and their details
           </p>
         </div>
-        <Button variant="gradient" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Organization
-        </Button>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="gradient" className="gap-2" onClick={openAddDialog}>
+              <Plus className="h-4 w-4" />
+              Add Organization
+            </Button>
+          </DialogTrigger>
+        </Dialog>
       </div>
 
       {/* Search and Filters */}
@@ -120,15 +230,25 @@ export default function Organizations() {
               
               {/* Actions */}
               <div className="flex gap-2 pt-2 border-t">
-                <Button variant="outline" size="sm" className="flex-1 gap-1">
-                  <Eye className="h-3 w-3" />
-                  View
-                </Button>
-                <Button variant="secondary" size="sm" className="flex-1 gap-1">
-                  <Edit className="h-3 w-3" />
-                  Edit
-                </Button>
-                <Button variant="destructive" size="sm" className="gap-1">
+                <Dialog open={viewingOrg?.id === org.id} onOpenChange={(open) => !open && setViewingOrg(null)}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={() => setViewingOrg(org)}>
+                      <Eye className="h-3 w-3" />
+                      View
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+                
+                <Dialog open={editingOrg?.id === org.id} onOpenChange={(open) => !open && setEditingOrg(null)}>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="flex-1 gap-1" onClick={() => openEditDialog(org)}>
+                      <Edit className="h-3 w-3" />
+                      Edit
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+                
+                <Button variant="destructive" size="sm" className="gap-1" onClick={() => handleDeleteOrganization(org.id)}>
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>
@@ -146,13 +266,152 @@ export default function Organizations() {
             {searchTerm ? 'Try adjusting your search terms.' : 'Get started by adding your first organization.'}
           </p>
           {!searchTerm && (
-            <Button variant="textile" className="gap-2">
+            <Button variant="textile" className="gap-2" onClick={openAddDialog}>
               <Plus className="h-4 w-4" />
               Add Your First Organization
             </Button>
           )}
         </div>
       )}
+
+      {/* Add/Edit Organization Dialog */}
+      <Dialog open={isAddDialogOpen || !!editingOrg} onOpenChange={(open) => {
+        if (!open) {
+          setIsAddDialogOpen(false);
+          setEditingOrg(null);
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingOrg ? 'Edit Organization' : 'Add New Organization'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Organization Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Enter organization name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="address">Address *</Label>
+              <Textarea
+                id="address"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                placeholder="Enter complete address"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone *</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="Enter phone number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="Enter email address"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="gstNumber">GST Number</Label>
+              <Input
+                id="gstNumber"
+                value={formData.gstNumber}
+                onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
+                placeholder="Enter GST number (optional)"
+              />
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => {
+                  setIsAddDialogOpen(false);
+                  setEditingOrg(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={editingOrg ? handleEditOrganization : handleAddOrganization}
+              >
+                {editingOrg ? 'Update' : 'Add'} Organization
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Organization Dialog */}
+      <Dialog open={!!viewingOrg} onOpenChange={(open) => !open && setViewingOrg(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              {viewingOrg?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {viewingOrg && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">Address</Label>
+                <p className="text-sm mt-1">{viewingOrg.address}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Phone</Label>
+                  <p className="text-sm mt-1">{viewingOrg.phone}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                  <p className="text-sm mt-1">{viewingOrg.email}</p>
+                </div>
+              </div>
+              {viewingOrg.gstNumber && (
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">GST Number</Label>
+                  <p className="text-sm mt-1 font-mono">{viewingOrg.gstNumber}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Created</Label>
+                  <p className="text-sm mt-1">{viewingOrg.createdAt.toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Updated</Label>
+                  <p className="text-sm mt-1">{viewingOrg.updatedAt.toLocaleDateString()}</p>
+                </div>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" className="flex-1" onClick={() => setViewingOrg(null)}>
+                  Close
+                </Button>
+                <Button className="flex-1" onClick={() => {
+                  setViewingOrg(null);
+                  openEditDialog(viewingOrg);
+                }}>
+                  Edit Organization
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
