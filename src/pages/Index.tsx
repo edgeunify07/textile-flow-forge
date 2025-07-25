@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -20,6 +21,15 @@ import {
 } from 'lucide-react';
 
 const Index = () => {
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+
+  // If user is authenticated, redirect to appropriate dashboard
+  if (user && profile) {
+    navigate('/organizations');
+    return null;
+  }
+
   const features = [
     {
       icon: Building2,
@@ -126,11 +136,11 @@ const Index = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link to="/organizations">Get Started</Link>
+              <Link to="/auth">Sign In</Link>
             </Button>
             <Button variant="gradient" asChild>
-              <Link to="/variables">
-                Explore Features
+              <Link to="/auth">
+                Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -156,14 +166,14 @@ const Index = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="gradient" className="gap-2" asChild>
-                <Link to="/organizations">
-                  Start Managing Organizations
+                <Link to="/auth">
+                  Get Started Today
                   <ArrowRight className="h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="gap-2" asChild>
-                <Link to="/variables">
-                  Explore Variables
+                <Link to="/auth">
+                  Sign In
                   <Package className="h-5 w-5" />
                 </Link>
               </Button>

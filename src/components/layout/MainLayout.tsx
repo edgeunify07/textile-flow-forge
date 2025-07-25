@@ -1,11 +1,14 @@
 import { ReactNode } from 'react';
 import { Navigation } from './Navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
+  const { profile } = useAuth();
+
   return (
     <div className="flex h-screen bg-background">
       <Navigation />
