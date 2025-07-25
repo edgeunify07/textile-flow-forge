@@ -21,6 +21,7 @@ export type Database = {
           material_cost: number
           material_name: string
           material_quantity: number
+          organization_id: string | null
           product_id: string
           updated_at: string
         }
@@ -30,6 +31,7 @@ export type Database = {
           material_cost: number
           material_name: string
           material_quantity: number
+          organization_id?: string | null
           product_id: string
           updated_at?: string
         }
@@ -39,10 +41,18 @@ export type Database = {
           material_cost?: number
           material_name?: string
           material_quantity?: number
+          organization_id?: string | null
           product_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bom_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bom_product_id_fkey"
             columns: ["product_id"]
@@ -59,6 +69,7 @@ export type Database = {
           cpp_2: number | null
           cpp_total: number | null
           created_at: string
+          organization_id: string | null
           product_id: string
           size: Database["public"]["Enums"]["size_enum"]
           updated_at: string
@@ -69,6 +80,7 @@ export type Database = {
           cpp_2?: number | null
           cpp_total?: number | null
           created_at?: string
+          organization_id?: string | null
           product_id: string
           size: Database["public"]["Enums"]["size_enum"]
           updated_at?: string
@@ -79,11 +91,19 @@ export type Database = {
           cpp_2?: number | null
           cpp_total?: number | null
           created_at?: string
+          organization_id?: string | null
           product_id?: string
           size?: Database["public"]["Enums"]["size_enum"]
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "material_costing_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "material_costing_product_id_fkey"
             columns: ["product_id"]
@@ -92,6 +112,39 @@ export type Database = {
             referencedColumns: ["product_id"]
           },
         ]
+      }
+      organizations: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       products: {
         Row: {
@@ -103,6 +156,7 @@ export type Database = {
           cpp_total: number | null
           created_at: string
           description: string
+          organization_id: string | null
           product_id: string
           updated_at: string
           user_id: string
@@ -116,6 +170,7 @@ export type Database = {
           cpp_total?: number | null
           created_at?: string
           description: string
+          organization_id?: string | null
           product_id?: string
           updated_at?: string
           user_id: string
@@ -129,16 +184,76 @@ export type Database = {
           cpp_total?: number | null
           created_at?: string
           description?: string
+          organization_id?: string | null
           product_id?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          organization_id: string | null
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          organization_id?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          organization_id?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       size_inventory: {
         Row: {
           created_at: string
           inventory_id: string
+          organization_id: string | null
           product_id: string
           size: Database["public"]["Enums"]["size_enum"]
           stock_quantity: number
@@ -147,6 +262,7 @@ export type Database = {
         Insert: {
           created_at?: string
           inventory_id?: string
+          organization_id?: string | null
           product_id: string
           size: Database["public"]["Enums"]["size_enum"]
           stock_quantity?: number
@@ -155,12 +271,20 @@ export type Database = {
         Update: {
           created_at?: string
           inventory_id?: string
+          organization_id?: string | null
           product_id?: string
           size?: Database["public"]["Enums"]["size_enum"]
           stock_quantity?: number
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "size_inventory_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "size_inventory_product_id_fkey"
             columns: ["product_id"]
@@ -170,15 +294,55 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_organization: {
+        Args: { user_uuid: string }
+        Returns: string
+      }
+      get_user_role: {
+        Args: { user_uuid: string }
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
     }
     Enums: {
       size_enum: "S" | "M" | "L" | "XL"
+      user_role: "superadmin" | "org_admin" | "org_user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -307,6 +471,7 @@ export const Constants = {
   public: {
     Enums: {
       size_enum: ["S", "M", "L", "XL"],
+      user_role: ["superadmin", "org_admin", "org_user"],
     },
   },
 } as const
