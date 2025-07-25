@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
 import { 
   Building2, 
   Package, 
@@ -18,9 +16,7 @@ import {
   Bell,
   Brain,
   Menu,
-  X,
-  LogOut,
-  User
+  X
 } from 'lucide-react';
 
 const navItems = [
@@ -101,26 +97,6 @@ const navItems = [
 export function Navigation() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-  const { profile, signOut } = useAuth();
-  const { toast } = useToast();
-
-  const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Signed out",
-        description: "You have been successfully signed out.",
-      });
-      navigate('/auth');
-    }
-  };
 
   return (
     <>
@@ -198,40 +174,11 @@ export function Navigation() {
             </div>
           </nav>
 
-          {/* User Profile & Footer */}
-          <div className="border-t">
-            {profile && (
-              <div className="p-4 border-b">
-                <div className="flex items-center space-x-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {profile.first_name && profile.last_name 
-                        ? `${profile.first_name} ${profile.last_name}` 
-                        : profile.email}
-                    </p>
-                    <p className="text-xs text-muted-foreground capitalize">
-                      {profile.role.replace('_', ' ')}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleSignOut}
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-            <div className="p-4">
-              <div className="text-center text-xs text-muted-foreground">
-                <p>UnifyEdge LLP v2.0</p>
-                <p className="mt-1">Comprehensive Textile Management</p>
-              </div>
+          {/* Footer */}
+          <div className="border-t p-4">
+            <div className="text-center text-xs text-muted-foreground">
+              <p>UnifyEdge LLP v2.0</p>
+              <p className="mt-1">Comprehensive Textile Management</p>
             </div>
           </div>
         </div>
